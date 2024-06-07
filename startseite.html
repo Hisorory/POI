@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porsche Informatik Themen</title>
+    <link rel="stylesheet" href="startseite.css">
+</head>
+<body>
+<div class="container">
+    <div class="logo">
+        <img src="logo.png" alt="Porsche Informatik Logo">
+    </div>
+    <div class="search-container">
+        <input type="text" placeholder="Suchen...">
+        <button class="search-btn">
+            <img src="search-icon.png" alt="Search Icon">
+        </button>
+        <button class="filter-btn">
+            <img src="filter-icon.png" alt="Filter Icon">
+        </button>
+    </div>
+    <div class="tags">
+        <a href="#">KI</a>
+        <a href="#">Edge Computing</a>
+        <a href="#">Blockchain</a>
+    </div>
+    <button class="add-btn">+ Hinzufügen</button>
+    <div class="topics-container">
+        <h2>Wissenschaftliche Themen</h2>
+        <table class="topics-table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Thema</th>
+                <th>Status</th>
+                <th>Art</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>Effiziente Algorithmen zur automatischen Erkennung von Anomalien in großen Datensätzen</td>
+                <td><span class="status draft">Entwurf</span></td>
+                <td>Bachelor</td>
+                <td>
+                    <button class="edit-btn"><img src="edit-icon.png" alt="Edit"></button>
+                    <button class="delete-btn"><img src="delete-icon.png" alt="Delete"></button>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>Optimierung von Deep Learning-Techniken zur Bilderkennung und -klassifizierung</td>
+                <td><span class="status complete">Vollständig</span></td>
+                <td>Master</td>
+                <td>
+                    <button class="edit-btn"><img src="edit-icon.png" alt="Edit"></button>
+                    <button class="delete-btn"><img src="delete-icon.png" alt="Delete"></button>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>Analyse und Optimierung von maschinellen Lernalgorithmen zur Vorhersage von...</td>
+                <td><span class="status draft">Entwurf</span></td>
+                <td>Master</td>
+                <td>
+                    <button class="edit-btn"><img src="edit-icon.png" alt="Edit"></button>
+                    <button class="delete-btn"><img src="delete-icon.png" alt="Delete"></button>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>Analyse und Verbesserung der Benutzererfahrung in mobilen Anwendungen</td>
+                <td><span class="status draft">Vergessen</span></td>
+                <td>Bachelor</td>
+                <td>
+                    <button class="edit-btn"><img src="edit-icon.png" alt="Edit"></button>
+                    <button class="delete-btn"><img src="delete-icon.png" alt="Delete"></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
