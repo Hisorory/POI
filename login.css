@@ -32,7 +32,7 @@ body {
 }
 
 .user-icon img {
-    width: 100px;
+    width: 200px;
 }
 
 .login-form {
@@ -79,10 +79,11 @@ body {
 
 .button-group {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 10px;
     width: 100%;
     padding: 0 20px;
+    margin-left: auto;
 }
 
 .button-group button {
@@ -106,6 +107,7 @@ body {
 .button-group button:hover {
     opacity: 0.9;
 }
+
 
 
 

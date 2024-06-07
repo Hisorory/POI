@@ -12,29 +12,44 @@
         <img src="logo.png" alt="Porsche Informatik Logo">
     </div>
     <div class="search-container">
-        <input type="text" placeholder="Suchen...">
-        <button class="search-btn">
-            <img src="search-icon.png" alt="Search Icon">
-        </button>
+        <div class="search-wrapper">
+            <button class="search-btn">
+                <img src="search-icon.png" alt="Search Icon">
+            </button>
+            <input type="text" placeholder="Suchen...">
+        </div>
         <button class="filter-btn">
             <img src="filter-icon.png" alt="Filter Icon">
         </button>
+        <button class="add-btn">+ Hinzufügen</button>
     </div>
     <div class="tags">
         <a href="#">KI</a>
         <a href="#">Edge Computing</a>
         <a href="#">Blockchain</a>
     </div>
-    <button class="add-btn">+ Hinzufügen</button>
     <div class="topics-container">
         <h2>Wissenschaftliche Themen</h2>
         <table class="topics-table">
             <thead>
             <tr>
-                <th></th>
+                <th><img src="download-icon.png" alt="Download Icon" class="download-icon"></th>
                 <th>Thema</th>
-                <th>Status</th>
-                <th>Art</th>
+                <th>
+                    <select id="status-filter">
+                        <option value="">Status</option>
+                        <option value="Entwurf">Entwurf</option>
+                        <option value="Vollständig">Vollständig</option>
+                        <option value="Vergessen">Vergessen</option>
+                    </select>
+                </th>
+                <th>
+                    <select id="art-filter">
+                        <option value="">Art</option>
+                        <option value="Bachelor">Bachelor</option>
+                        <option value="Master">Master</option>
+                    </select>
+                </th>
                 <th></th>
             </tr>
             </thead>
@@ -72,7 +87,7 @@
             <tr>
                 <td><input type="checkbox"></td>
                 <td>Analyse und Verbesserung der Benutzererfahrung in mobilen Anwendungen</td>
-                <td><span class="status draft">Vergessen</span></td>
+                <td><span class="status vergess">Vergessen</span></td>
                 <td>Bachelor</td>
                 <td>
                     <button class="edit-btn"><img src="edit-icon.png" alt="Edit"></button>
@@ -83,5 +98,9 @@
         </table>
     </div>
 </div>
+<script src="filter.js"></script>
 </body>
 </html>
+
+
+
