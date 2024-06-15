@@ -1,0 +1,79 @@
+
+
+.container {
+    width: 80%;
+    margin: 50px auto;
+    padding: 20px 30px;
+    border-radius: 8px;
+
+}
+.header img {
+    width: 400px; /* Größe des Logos anpassen */
+    display: block;
+    margin: 0 auto 40px;
+    margin-top: 60px;
+}
+
+.title-container h2 {
+    background-color: #183765;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    display: inline-block;
+    min-width: 962px; /* This ensures the box is longer */
+    box-sizing: border-box; /* Include padding in width calculation */
+    margin-top: -50px; /* Moves the box higher */
+    white-space: nowrap; /* Keeps text on one line */
+    text-align: center;
+    font-family: "Myanmar Text";
+    font-size: 30px;
+
+
+
+}
+
+
+.ideas-container {
+    border: 2px solid black;
+    overflow: hidden; /* Ensures border-radius is applied to children */
+    width: 935px; /* Adjust based on your layout needs */
+    margin: -2px auto 70px; /* Negativer oberer Margin */
+    border-left: 15px solid #183765; /* Der blaue vertikale Streifen */
+    border-right:15px solid #183765;
+}
+
+.parent-element { /* Ersetze `.parent-element` durch die tatsächliche Klasse oder das Element */
+    padding-top: -10px; /* Reduziertes Padding oben */
+}
+
+.idea {
+    padding: 20px 20px;
+    border-bottom: 2px solid black;
+
+
+}
+
+.idea:last-child {
+    border-bottom: none; /* No border at the bottom of the last item */
+}
+
+.more-ideas-btn {
+    background-color: #2b5474;
+    color: white;
+    padding: 7px 10px;
+    border: none;
+    cursor: pointer;
+    display: block;
+    text-align: center; /* Center button text */
+    margin: 20px auto; /* Center button within the container */
+    width: fit-content; /* Fit the content's width */
+    border-radius: 5px;
+    font-size: 20px;
+    font-family: "Myanmar Text";
+
+}
+
+.more-ideas-btn:hover {
+    background-color: #183765; /* Darker blue on hover */
+}
+
