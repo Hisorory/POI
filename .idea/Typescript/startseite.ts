@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tags = document.querySelectorAll('.tags a');
     const tableRows = document.querySelectorAll('.topics-table tbody tr');
     const deleteButtons = document.querySelectorAll('.delete-btn');
+    const modal = document.getElementById('detail-modal') as HTMLDivElement;
+    const closeButton = modal.querySelector('.close-btn') as HTMLSpanElement;
 
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
@@ -12,32 +14,26 @@ document.addEventListener('DOMContentLoaded', () => {
     tags.forEach(tag => tag.addEventListener('click', filterByTag));
     deleteButtons.forEach(button => button.addEventListener('click', deleteRow));
 
+    tableRows.forEach(row => {
+        row.addEventListener('click', (event) => {
+            showDetailModal(row as HTMLTableRowElement);
+        });
+    });
+
+    closeButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
     function filterTopics() {
         const statusValue = statusFilter.value.toLowerCase();
         const artValue = artFilter.value.toLowerCase();
         const searchValue = searchInput.value.toLowerCase();
-
-        tableRows.forEach(row => {
-            if (row instanceof HTMLTableRowElement) {
-                const statusElement = row.querySelector('.status');
-                const statusText = statusElement ? statusElement.textContent?.toLowerCase() : '';
-                const artText = row.cells[3]?.textContent?.toLowerCase() || '';
-                const topicText = row.cells[1]?.textContent?.toLowerCase() || '';
-
-                // @ts-ignore
-                const statusMatches = statusValue === '' || (statusText && statusText.includes(statusValue));
-                // @ts-ignore
-                const artMatches = artValue === '' || artText.includes(artValue);
-                // @ts-ignore
-                const searchMatches = searchValue === '' || topicText.includes(searchValue);
-
-                if (statusMatches && artMatches && searchMatches) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
     }
 
     function filterByTag(event: Event) {
@@ -45,16 +41,40 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = tag;
         filterTopics();
     }
-
+});
     function deleteRow(event: Event) {
         const button = event.target as HTMLElement;
-        const row = button.closest('tr');
+        const row = button.closest('tr') as HTMLTableRowElement;
         if (row) {
             row.remove();
         }
+        event.stopPropagation();
     }
 
-});
+    function showDetailModal(row: HTMLTableRowElement) {
+        const title = row.cells[1].textContent;
+        const author = "max.mustermann@gmail.com"; // Replace with actual author data
+        const status = row.querySelector('.status')?.textContent;
+        const type = row.cells[3].textContent;
+        const description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
+
+        const modalTitle = document.getElementById('modal-title');
+        const modalAuthor = document.getElementById('modal-author');
+        const modalStatus = document.getElementById('modal-status');
+        const modalType = document.getElementById('modal-type');
+        const modalDescription = document.getElementById('modal-description');
+
+        modalTitle.textContent = title;
+        modalAuthor.textContent = `Autor: ${author}`;
+        modalStatus.textContent = `Status: ${status}`;
+        modalType.textContent = `Typ: ${type}`;
+        modalDescription.textContent = `Beschreibung: ${description}`;
+
+        const modal = document.getElementById('detail-modal') as HTMLDivElement;
+        modal.style.display = 'block';
+    }
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector('.add-btn') as HTMLButtonElement;
@@ -142,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function addTopicToTable(title: string, status: string, type: string) {
         const statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
 
-        // Use default empty values if no valid status or type provided
         const displayStatus = status || '';
         const displayType = type || '';
 
@@ -160,6 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         topicsTable.querySelector('tbody').appendChild(newRow);
+
+        newRow.querySelector('.delete-btn').addEventListener('click', deleteRow);
+        newRow.addEventListener('click', () => showDetailModal(newRow as HTMLTableRowElement));
+
     }
 
     function resetForm() {
@@ -222,6 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add initial section and tag
     addSection();
     addTag();
+
+
+
 });
 
 
