@@ -5,24 +5,39 @@ document.addEventListener('DOMContentLoaded', function () {
     var tags = document.querySelectorAll('.tags a');
     var tableRows = document.querySelectorAll('.topics-table tbody tr');
     var deleteButtons = document.querySelectorAll('.delete-btn');
-    var modal = document.getElementById('detail-modal');
-    var closeButton = modal.querySelector('.close-btn');
+    var detailModal = document.getElementById('detail-modal');
+    var closeButton = detailModal.querySelector('.close-btn');
+    var downloadButtons = document.querySelectorAll('.download-icon');
+    var filterButton = document.querySelector('.filter-btn');
+    var filterModal = document.getElementById('filter-modal');
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
     searchInput.addEventListener('input', filterTopics);
     tags.forEach(function (tag) { return tag.addEventListener('click', filterByTag); });
     deleteButtons.forEach(function (button) { return button.addEventListener('click', deleteRow); });
+    downloadButtons.forEach(function (button) { return button.addEventListener('click', downloadPDF); });
+    filterButton.addEventListener('click', function () {
+        filterModal.style.display = 'block';
+    });
+    document.getElementById('filter-close-btn').addEventListener('click', function () {
+        filterModal.style.display = 'none';
+    });
+    window.addEventListener('click', function (event) {
+        if (event.target === filterModal) {
+            filterModal.style.display = 'none';
+        }
+    });
     tableRows.forEach(function (row) {
         row.addEventListener('click', function (event) {
             showDetailModal(row);
         });
     });
     closeButton.addEventListener('click', function () {
-        modal.style.display = 'none';
+        detailModal.style.display = 'none';
     });
     window.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
+        if (event.target === detailModal) {
+            detailModal.style.display = 'none';
         }
     });
     function filterTopics() {
@@ -65,6 +80,26 @@ function showDetailModal(row) {
     var modal = document.getElementById('detail-modal');
     modal.style.display = 'block';
 }
+function downloadPDF(event) {
+    var _a;
+    var row = event.target.closest('tr');
+    if (!row)
+        return;
+    var title = row.cells[1].textContent;
+    var author = "max.mustermann@gmail.com"; // Replace with actual author data
+    var status = (_a = row.querySelector('.status')) === null || _a === void 0 ? void 0 : _a.textContent;
+    var type = row.cells[3].textContent;
+    var description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
+    // @ts-ignore
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF();
+    doc.text("Titel: ".concat(title), 10, 10);
+    doc.text("Autor: ".concat(author), 10, 20);
+    doc.text("Status: ".concat(status), 10, 30);
+    doc.text("Typ: ".concat(type), 10, 40);
+    doc.text("Beschreibung: ".concat(description), 10, 50);
+    doc.save("".concat(title, ".pdf"));
+}
 document.addEventListener('DOMContentLoaded', function () {
     var addButton = document.querySelector('.add-btn');
     var closeButton = document.querySelector('.close-btn');
@@ -77,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var titleInput = document.getElementById('title');
     var authorInput = document.getElementById('author');
     var topicsTable = document.getElementById('topics-table');
+    var filterButton = document.querySelector('.filter-btn');
+    var filterModal = document.getElementById('filter-modal');
     var placeholderSrc = placeholderImg.src; // Store the original placeholder image source
     addButton.addEventListener('click', function () {
         modal.style.display = 'block';
@@ -119,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var statusValue = '';
         var typeValue = '';
         tagInputs.forEach(function (input) {
-            // @ts-ignore
             var value = input.value.trim();
             if (value === 'Entwurf' || value === 'Vollständig' || value === 'Vergeben') {
                 statusValue = value;
@@ -137,6 +173,17 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(errorMessage);
         }
     });
+    filterButton.addEventListener('click', function () {
+        filterModal.style.display = 'block';
+    });
+    document.getElementById('filter-close-btn').addEventListener('click', function () {
+        filterModal.style.display = 'none';
+    });
+    window.addEventListener('click', function (event) {
+        if (event.target === filterModal) {
+            filterModal.style.display = 'none';
+        }
+    });
     function addTopicToTable(title, status, type) {
         var statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
         var displayStatus = status || '';
@@ -152,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function () {
         fileInput.value = ''; // Clear the file input
         titleInput.value = ''; // Clear the title input
         authorInput.value = ''; // Clear the author input
-        // @ts-ignore
         document.querySelectorAll('.tag-input').forEach(function (input) { return input.value = ''; }); // Clear all tag inputs
     }
     function addSection() {
