@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.querySelector('.search-wrapper input') as HTMLInputElement;
     const tags = document.querySelectorAll('.tags a');
     const tableRows = document.querySelectorAll('.topics-table tbody tr');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
 
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
     searchInput.addEventListener('input', filterTopics);
     tags.forEach(tag => tag.addEventListener('click', filterByTag));
+    deleteButtons.forEach(button => button.addEventListener('click', deleteRow));
 
     function filterTopics() {
         const statusValue = statusFilter.value.toLowerCase();
@@ -43,6 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = tag;
         filterTopics();
     }
+
+    function deleteRow(event: Event) {
+        const button = event.target as HTMLElement;
+        const row = button.closest('tr');
+        if (row) {
+            row.remove();
+        }
+    }
+
 });
 
 
