@@ -31,7 +31,7 @@
     </div>
     <div class="topics-container">
         <h2>Wissenschaftliche Themen</h2>
-        <table class="topics-table">
+        <table id="topics-table" class="topics-table">
             <thead>
             <tr>
                 <th><img src="../Bilder/download-icon.png" alt="Download Icon" class="download-icon"></th>
@@ -99,8 +99,54 @@
         </table>
     </div>
 </div>
+
+<div class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div class="modal-body">
+            <div class="left-section">
+                <div class="image-upload">
+                    <img id="placeholder-img" src="../Bilder/placeholder.png" alt="Bild hinzufügen">
+                    <input type="file" id="file-input" style="display: none;" accept="image/*">
+                    <div class="tag-container">
+                        <!-- Dynamically added tag items will go here -->
+                        <div class="tag-item">
+                            <button class="add-tag-btn">+</button>
+                            <input type="text" class="tag-input" placeholder="Tag hinzufügen">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-section">
+                <div class="input-container">
+                    <label for="title" class="modal-label">Titel hinzufügen*</label>
+                    <textarea id="title" class="modal-textarea" placeholder="Titel hinzufügen*"></textarea>
+                    <label for="author" class="modal-label">Autor*in hinzufügen*</label>
+                    <input type="text" id="author" class="modal-input" placeholder="Autor*in hinzufügen*">
+                </div>
+            </div>
+        </div>
+        <div class="sections-container">
+            <!-- Dynamically added sections will go here -->
+            <div class="section">
+                <div class="section-header">
+                    <button class="add-section-btn">+</button>
+                    <input type="text" class="modal-input" placeholder="Abschnitt Titel hinzufügen">
+                </div>
+                <textarea class="modal-textarea large-textarea" placeholder="Abschnitt hinzufügen"></textarea>
+            </div>
+        </div>
+        <div class="additional-controls">
+            <button class="save-btn">Speichern</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
+
+
+
 
 
 
