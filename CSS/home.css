@@ -20,19 +20,20 @@ html, body {
 
 .title-container h2 {
     background-color: #183765;
-    margin-left: 130px;
+    margin-left: 13px;
 
     color: white;
     padding: 10px;
     border-radius: 10px;
     display: inline-block;
-    min-width: 965px; /* This ensures the box is longer */
+    min-width: 960px; /* This ensures the box is longer */
     box-sizing: border-box; /* Include padding in width calculation */
     margin-top: -50px; /* Moves the box higher */
     white-space: nowrap; /* Keeps text on one line */
     text-align: center;
     font-family: "Myanmar Text";
     font-size: 30px;
+
 
 
 
