@@ -4,38 +4,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.querySelector('.search-wrapper input') as HTMLInputElement;
     const tags = document.querySelectorAll('.tags a');
     const tableRows = document.querySelectorAll('.topics-table tbody tr');
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const detailModal = document.getElementById('detail-modal') as HTMLDivElement;
+    const closeButton = detailModal.querySelector('.close-btn') as HTMLSpanElement;
+    const downloadButtons = document.querySelectorAll('.download-icon');
+    const filterButton = document.querySelector('.filter-btn') as HTMLButtonElement;
+    const filterModal = document.getElementById('filter-modal') as HTMLDivElement;
+
 
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
     searchInput.addEventListener('input', filterTopics);
     tags.forEach(tag => tag.addEventListener('click', filterByTag));
+    deleteButtons.forEach(button => button.addEventListener('click', deleteRow));
+    downloadButtons.forEach(button => button.addEventListener('click', downloadPDF));
+    filterButton.addEventListener('click', () => {
+        filterModal.style.display = 'block';
+    });
+
+    document.getElementById('filter-close-btn').addEventListener('click', () => {
+        filterModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === filterModal) {
+            filterModal.style.display = 'none';
+        }
+    });
+
+    tableRows.forEach(row => {
+        row.addEventListener('click', (event) => {
+            showDetailModal(row as HTMLTableRowElement);
+        });
+    });
+
+    closeButton.addEventListener('click', () => {
+        detailModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === detailModal) {
+            detailModal.style.display = 'none';
+        }
+    });
 
     function filterTopics() {
         const statusValue = statusFilter.value.toLowerCase();
         const artValue = artFilter.value.toLowerCase();
         const searchValue = searchInput.value.toLowerCase();
-
-        tableRows.forEach(row => {
-            if (row instanceof HTMLTableRowElement) {
-                const statusElement = row.querySelector('.status');
-                const statusText = statusElement ? statusElement.textContent?.toLowerCase() : '';
-                const artText = row.cells[3]?.textContent?.toLowerCase() || '';
-                const topicText = row.cells[1]?.textContent?.toLowerCase() || '';
-
-                // @ts-ignore
-                const statusMatches = statusValue === '' || (statusText && statusText.includes(statusValue));
-                // @ts-ignore
-                const artMatches = artValue === '' || artText.includes(artValue);
-                // @ts-ignore
-                const searchMatches = searchValue === '' || topicText.includes(searchValue);
-
-                if (statusMatches && artMatches && searchMatches) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
     }
 
     function filterByTag(event: Event) {
@@ -44,6 +60,61 @@ document.addEventListener('DOMContentLoaded', () => {
         filterTopics();
     }
 });
+
+function deleteRow(event: Event) {
+    const button = event.target as HTMLElement;
+    const row = button.closest('tr') as HTMLTableRowElement;
+    if (row) {
+        row.remove();
+    }
+    event.stopPropagation();
+}
+
+function showDetailModal(row: HTMLTableRowElement) {
+    const title = row.cells[1].textContent;
+    const author = "max.mustermann@gmail.com"; // Replace with actual author data
+    const status = row.querySelector('.status')?.textContent;
+    const type = row.cells[3].textContent;
+    const description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
+
+    const modalTitle = document.getElementById('modal-title');
+    const modalAuthor = document.getElementById('modal-author');
+    const modalStatus = document.getElementById('modal-status');
+    const modalType = document.getElementById('modal-type');
+    const modalDescription = document.getElementById('modal-description');
+
+    modalTitle.textContent = title;
+    modalAuthor.textContent = `Autor: ${author}`;
+    modalStatus.textContent = `Status: ${status}`;
+    modalType.textContent = `Typ: ${type}`;
+    modalDescription.textContent = `Beschreibung: ${description}`;
+
+    const modal = document.getElementById('detail-modal') as HTMLDivElement;
+    modal.style.display = 'block';
+}
+
+function downloadPDF(event: Event) {
+    const row = (event.target as HTMLElement).closest('tr') as HTMLTableRowElement;
+    if (!row) return;
+
+    const title = row.cells[1].textContent;
+    const author = "max.mustermann@gmail.com"; // Replace with actual author data
+    const status = row.querySelector('.status')?.textContent;
+    const type = row.cells[3].textContent;
+    const description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
+
+    // @ts-ignore
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text(`Titel: ${title}`, 10, 10);
+    doc.text(`Autor: ${author}`, 10, 20);
+    doc.text(`Status: ${status}`, 10, 30);
+    doc.text(`Typ: ${type}`, 10, 40);
+    doc.text(`Beschreibung: ${description}`, 10, 50);
+
+    doc.save(`${title}.pdf`);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector('.add-btn') as HTMLButtonElement;
@@ -57,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('title') as HTMLTextAreaElement;
     const authorInput = document.getElementById('author') as HTMLInputElement;
     const topicsTable = document.getElementById('topics-table') as HTMLTableElement;
+    const filterButton = document.querySelector('.filter-btn') as HTMLButtonElement;
+    const filterModal = document.getElementById('filter-modal') as HTMLDivElement;
 
     const placeholderSrc = placeholderImg.src; // Store the original placeholder image source
 
@@ -111,8 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let statusValue = '';
         let typeValue = '';
         tagInputs.forEach((input) => {
-            // @ts-ignore
-            const value = input.value.trim();
+            const value = (input as HTMLInputElement).value.trim();
             if (value === 'Entwurf' || value === 'Vollständig' || value === 'Vergeben') {
                 statusValue = value;
             }
@@ -130,10 +202,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    filterButton.addEventListener('click', () => {
+        filterModal.style.display = 'block';
+    });
+
+    document.getElementById('filter-close-btn').addEventListener('click', () => {
+        filterModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === filterModal) {
+            filterModal.style.display = 'none';
+        }
+    });
+
     function addTopicToTable(title: string, status: string, type: string) {
         const statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
 
-        // Use default empty values if no valid status or type provided
         const displayStatus = status || '';
         const displayType = type || '';
 
@@ -152,6 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // @ts-ignore
         topicsTable.querySelector('tbody').appendChild(newRow);
+
+        newRow.querySelector('.delete-btn').addEventListener('click', deleteRow);
+        newRow.addEventListener('click', () => showDetailModal(newRow as HTMLTableRowElement));
     }
 
     function resetForm() {
@@ -159,8 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.value = ''; // Clear the file input
         titleInput.value = ''; // Clear the title input
         authorInput.value = ''; // Clear the author input
-        // @ts-ignore
-        document.querySelectorAll('.tag-input').forEach(input => input.value = ''); // Clear all tag inputs
+        document.querySelectorAll('.tag-input').forEach(input => (input as HTMLInputElement).value = ''); // Clear all tag inputs
     }
 
     function addSection() {
@@ -215,19 +302,3 @@ document.addEventListener('DOMContentLoaded', () => {
     addSection();
     addTag();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
