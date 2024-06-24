@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterButton = document.querySelector('.filter-btn') as HTMLButtonElement;
     const filterModal = document.getElementById('filter-modal') as HTMLDivElement;
 
-
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
     searchInput.addEventListener('input', filterTopics);
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filterModal.style.display = 'block';
     });
 
-    document.getElementById('filter-close-btn').addEventListener('click', () => {
+    document.getElementById('filter-close-btn')?.addEventListener('click', () => {
         filterModal.style.display = 'none';
     });
 
@@ -52,6 +51,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusValue = statusFilter.value.toLowerCase();
         const artValue = artFilter.value.toLowerCase();
         const searchValue = searchInput.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const status = row.querySelector('.status')?.textContent?.toLowerCase() || '';
+            const art = row.cells[3]?.textContent?.toLowerCase() || '';
+            const title = row.cells[1]?.textContent?.toLowerCase() || '';
+
+            const matchesStatus = !statusValue || status.includes(statusValue);
+            const matchesArt = !artValue || art.includes(artValue);
+            const matchesSearch = !searchValue || title.includes(searchValue);
+
+            if (matchesStatus && matchesArt && matchesSearch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     }
 
     function filterByTag(event: Event) {
@@ -103,7 +118,6 @@ function downloadPDF(event: Event) {
     const type = row.cells[3].textContent;
     const description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
 
-    // @ts-ignore
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
@@ -154,13 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fileInput.addEventListener('change', (event) => {
-        // @ts-ignore
         const file = (event.target as HTMLInputElement).files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // @ts-ignore
-                placeholderImg.src = e.target.result as string;
+                placeholderImg.src = e.target?.result as string;
             };
             reader.readAsDataURL(file);
         }
@@ -206,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filterModal.style.display = 'block';
     });
 
-    document.getElementById('filter-close-btn').addEventListener('click', () => {
+    document.getElementById('filter-close-btn')?.addEventListener('click', () => {
         filterModal.style.display = 'none';
     });
 
@@ -235,10 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
         `;
 
-        // @ts-ignore
-        topicsTable.querySelector('tbody').appendChild(newRow);
+        topicsTable.querySelector('tbody')?.appendChild(newRow);
 
-        newRow.querySelector('.delete-btn').addEventListener('click', deleteRow);
+        newRow.querySelector('.delete-btn')?.addEventListener('click', deleteRow);
         newRow.addEventListener('click', () => showDetailModal(newRow as HTMLTableRowElement));
     }
 
