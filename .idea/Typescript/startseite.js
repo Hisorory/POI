@@ -1,4 +1,6 @@
+"use strict";
 document.addEventListener('DOMContentLoaded', function () {
+    var _a;
     var statusFilter = document.getElementById('status-filter');
     var artFilter = document.getElementById('art-filter');
     var searchInput = document.querySelector('.search-wrapper input');
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     filterButton.addEventListener('click', function () {
         filterModal.style.display = 'block';
     });
-    document.getElementById('filter-close-btn').addEventListener('click', function () {
+    (_a = document.getElementById('filter-close-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
         filterModal.style.display = 'none';
     });
     window.addEventListener('click', function (event) {
@@ -44,6 +46,21 @@ document.addEventListener('DOMContentLoaded', function () {
         var statusValue = statusFilter.value.toLowerCase();
         var artValue = artFilter.value.toLowerCase();
         var searchValue = searchInput.value.toLowerCase();
+        tableRows.forEach(function (row) {
+            var _a, _b, _c, _d, _e, _f;
+            var status = ((_b = (_a = row.querySelector('.status')) === null || _a === void 0 ? void 0 : _a.textContent) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || '';
+            var art = ((_d = (_c = row.cells[3]) === null || _c === void 0 ? void 0 : _c.textContent) === null || _d === void 0 ? void 0 : _d.toLowerCase()) || '';
+            var title = ((_f = (_e = row.cells[1]) === null || _e === void 0 ? void 0 : _e.textContent) === null || _f === void 0 ? void 0 : _f.toLowerCase()) || '';
+            var matchesStatus = !statusValue || status.includes(statusValue);
+            var matchesArt = !artValue || art.includes(artValue);
+            var matchesSearch = !searchValue || title.includes(searchValue);
+            if (matchesStatus && matchesArt && matchesSearch) {
+                row.style.display = '';
+            }
+            else {
+                row.style.display = 'none';
+            }
+        });
     }
     function filterByTag(event) {
         var _a;
@@ -90,7 +107,6 @@ function downloadPDF(event) {
     var status = (_a = row.querySelector('.status')) === null || _a === void 0 ? void 0 : _a.textContent;
     var type = row.cells[3].textContent;
     var description = "Lorem ipsum dolor sit amet..."; // Replace with actual description
-    // @ts-ignore
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF();
     doc.text("Titel: ".concat(title), 10, 10);
@@ -101,6 +117,7 @@ function downloadPDF(event) {
     doc.save("".concat(title, ".pdf"));
 }
 document.addEventListener('DOMContentLoaded', function () {
+    var _a;
     var addButton = document.querySelector('.add-btn');
     var closeButton = document.querySelector('.close-btn');
     var modal = document.querySelector('.modal');
@@ -136,7 +153,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (file) {
             var reader = new FileReader();
             reader.onload = function (e) {
-                placeholderImg.src = e.target.result;
+                var _a;
+                placeholderImg.src = (_a = e.target) === null || _a === void 0 ? void 0 : _a.result;
             };
             reader.readAsDataURL(file);
         }
@@ -176,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
     filterButton.addEventListener('click', function () {
         filterModal.style.display = 'block';
     });
-    document.getElementById('filter-close-btn').addEventListener('click', function () {
+    (_a = document.getElementById('filter-close-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
         filterModal.style.display = 'none';
     });
     window.addEventListener('click', function (event) {
@@ -185,13 +203,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     function addTopicToTable(title, status, type) {
+        var _a, _b;
         var statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
         var displayStatus = status || '';
         var displayType = type || '';
         var newRow = document.createElement('tr');
         newRow.innerHTML = "\n            <td><input type=\"checkbox\"></td>\n            <td>".concat(title, "</td>\n            <td><span class=\"status ").concat(statusClass, "\">").concat(displayStatus, "</span></td>\n            <td>").concat(displayType, "</td>\n            <td>\n                <button class=\"edit-btn\"><img src=\"../Bilder/edit-icon.png\" alt=\"Edit\"></button>\n                <button class=\"delete-btn\"><img src=\"../Bilder/delete-icon.png\" alt=\"Delete\"></button>\n            </td>\n        ");
-        topicsTable.querySelector('tbody').appendChild(newRow);
-        newRow.querySelector('.delete-btn').addEventListener('click', deleteRow);
+        (_a = topicsTable.querySelector('tbody')) === null || _a === void 0 ? void 0 : _a.appendChild(newRow);
+        (_b = newRow.querySelector('.delete-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', deleteRow);
         newRow.addEventListener('click', function () { return showDetailModal(newRow); });
     }
     function resetForm() {
