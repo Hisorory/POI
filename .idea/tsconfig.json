@@ -5,7 +5,8 @@
     "outDir": "./dist",
     "rootDir": "./HTML",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+
   },
   "include": ["HTML/**/*.ts"]
 }
