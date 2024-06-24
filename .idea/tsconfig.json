@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "outDir": "./dist",
     "rootDir": "./HTML",
     "strict": true,
     "esModuleInterop": true,
