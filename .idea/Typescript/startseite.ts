@@ -81,10 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fileInput.addEventListener('change', (event) => {
+        // @ts-ignore
         const file = (event.target as HTMLInputElement).files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
+                // @ts-ignore
                 placeholderImg.src = e.target.result as string;
             };
             reader.readAsDataURL(file);
@@ -148,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
         `;
 
+        // @ts-ignore
         topicsTable.querySelector('tbody').appendChild(newRow);
     }
 
