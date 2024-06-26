@@ -73,19 +73,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusValue = statusInput.value || 'Entwurf';
         const typeValue = typeInput.value || 'Bachelor';
 
+        const sections = Array.from(sectionsContainer.querySelectorAll('.section')).map(section => {
+            const title = (section.querySelector('.modal-input') as HTMLInputElement).value.trim();
+            const content = (section.querySelector('.modal-textarea') as HTMLTextAreaElement).value.trim();
+            return { title, content };
+        }).filter(section => section.title || section.content);
+
+        const tags = Array.from(tagContainer.querySelectorAll('.tag-item')).map(tagItem => {
+            const tag = (tagItem.querySelector('.tag-input') as HTMLInputElement).value.trim();
+            return tag;
+        }).filter(tag => tag);
+
         if (isValid) {
             const title = titleInput.value.trim();
             const author = authorInput.value.trim();
+            const imageUrl = uploadedImageUrl || '../Bilder/placeholder.png'; // Use placeholder image if no image uploaded
+
+            const topic = { id: '', title, status: statusValue, type: typeValue, author, imageUrl, sections, tags };
 
             if (editingRow) {
                 // Update existing topic
-                updateTopicInTable(editingRow, title, statusValue, typeValue, author, uploadedImageUrl);
-                updateTopicInLocalStorage(editingRow.dataset.id, { title, status: statusValue, type: typeValue, author, imageUrl: uploadedImageUrl });
+                topic.id = editingRow.dataset.id;
+                updateTopicInTable(editingRow, topic);
+                updateTopicInLocalStorage(topic.id, topic);
             } else {
                 // Add new topic
-                const id = new Date().getTime().toString();
-                addTopicToTable(id, title, statusValue, typeValue, author, uploadedImageUrl);
-                saveToLocalStorage({ id, title, status: statusValue, type: typeValue, author, imageUrl: uploadedImageUrl });
+                topic.id = new Date().getTime().toString();
+                addTopicToTable(topic);
+                saveToLocalStorage(topic);
             }
 
             modal.style.display = 'none';
@@ -101,14 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add event listener for the add-section button
-    document.querySelector('.add-section-btn')?.addEventListener('click', () => {
-        addSection();
-    });
+    document.querySelector('.add-section-btn')?.addEventListener('click', addSection);
 
     // Add event listener for the add-tag button
-    document.querySelector('.add-tag-btn')?.addEventListener('click', () => {
-        addTag();
-    });
+    document.querySelector('.add-tag-btn')?.addEventListener('click', addTag);
 
     // Event listener for the image upload
     placeholderImg.addEventListener('click', () => {
@@ -167,18 +178,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = row.querySelector('.status')?.textContent;
             const type = row.cells[3].textContent;
             const author = row.dataset.author;
-            const imageUrl = row.dataset.imageUrl;
+            const imageUrl = row.dataset.imageUrl || '../Bilder/placeholder.png'; // Use placeholder if no imageUrl
+            const sections = JSON.parse(row.dataset.sections || '[]');
+            const tags = JSON.parse(row.dataset.tags || '[]');
 
             titleInput.value = title;
             authorInput.value = author;
             statusInput.value = status;
             typeInput.value = type;
 
-            if (imageUrl) {
-                placeholderImg.src = imageUrl;
-                uploadedImageUrl = imageUrl;
-            } else {
-                resetImagePlaceholder();
+            placeholderImg.src = imageUrl;
+            uploadedImageUrl = imageUrl;
+
+            sectionsContainer.innerHTML = '';
+            sections.forEach(section => addSection(section.title, section.content));
+            if (sections.length === 0) {
+                addSection();
+            }
+
+            tagContainer.innerHTML = '';
+            tags.forEach(tag => addTag(tag));
+            if (tags.length === 0) {
+                addTag();
             }
 
             modal.style.display = 'block';
@@ -232,22 +253,21 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.save(`${title}.pdf`);
     }
 
-    function addTopicToTable(id: string, title: string, status: string, type: string, author: string, imageUrl: string) {
-        const statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
-
-        const displayStatus = status || '';
-        const displayType = type || '';
+    function addTopicToTable(topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
+        const statusClass = topic.status.toLowerCase() === 'vollständig' ? 'complete' : topic.status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
 
         const newRow = document.createElement('tr');
-        newRow.dataset.id = id;
-        newRow.dataset.author = author;
-        newRow.dataset.imageUrl = imageUrl;
+        newRow.dataset.id = topic.id;
+        newRow.dataset.author = topic.author;
+        newRow.dataset.imageUrl = topic.imageUrl;
+        newRow.dataset.sections = JSON.stringify(topic.sections);
+        newRow.dataset.tags = JSON.stringify(topic.tags);
 
         newRow.innerHTML = `
             <td><input type="checkbox"></td>
-            <td>${title}</td>
-            <td><span class="status ${statusClass}">${displayStatus}</span></td>
-            <td>${displayType}</td>
+            <td>${topic.title}</td>
+            <td><span class="status ${statusClass}">${topic.status}</span></td>
+            <td>${topic.type}</td>
             <td>
                 <button class="edit-btn"><img src="../Bilder/edit-icon.png" alt="Edit"></button>
                 <button class="delete-btn"><img src="../Bilder/delete-icon.png" alt="Delete"></button>
@@ -261,23 +281,25 @@ document.addEventListener('DOMContentLoaded', () => {
         newRow.addEventListener('click', () => showDetailModal(newRow as HTMLTableRowElement));
     }
 
-    function updateTopicInTable(row: HTMLTableRowElement, title: string, status: string, type: string, author: string, imageUrl: string) {
-        row.cells[1].textContent = title;
+    function updateTopicInTable(row: HTMLTableRowElement, topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
+        row.cells[1].textContent = topic.title;
         const statusElement = row.querySelector('.status')!;
-        statusElement.textContent = status;
-        statusElement.className = `status ${getStatusClass(status)}`;
-        row.cells[3].textContent = type;
-        row.dataset.author = author;
-        row.dataset.imageUrl = imageUrl;
+        statusElement.textContent = topic.status;
+        statusElement.className = `status ${getStatusClass(topic.status)}`;
+        row.cells[3].textContent = topic.type;
+        row.dataset.author = topic.author;
+        row.dataset.imageUrl = topic.imageUrl;
+        row.dataset.sections = JSON.stringify(topic.sections);
+        row.dataset.tags = JSON.stringify(topic.tags);
     }
 
-    function saveToLocalStorage(topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string }) {
+    function saveToLocalStorage(topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
         topics.push(topic);
         localStorage.setItem('topics', JSON.stringify(topics));
     }
 
-    function updateTopicInLocalStorage(id: string, updatedTopic: { title: string, status: string, type: string, author: string, imageUrl: string }) {
+    function updateTopicInLocalStorage(id: string, updatedTopic: { title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
         const index = topics.findIndex((topic: { id: string }) => topic.id === id);
         if (index !== -1) {
@@ -294,8 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadTopicsFromLocalStorage() {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
-        topics.forEach((topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string }) => {
-            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author, topic.imageUrl);
+        topics.forEach((topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) => {
+            addTopicToTable(topic);
         });
     }
 
@@ -318,26 +340,26 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.value = ''; // Clear the file input
     }
 
-    function addSection() {
+    function addSection(title = '', content = '') {
         const section = document.createElement('div');
         section.classList.add('section');
         section.innerHTML = `
             <div class="section-header">
                 <button class="add-section-btn">+</button>
-                <input type="text" class="modal-input" placeholder="Abschnitt Titel hinzufügen">
+                <input type="text" class="modal-input" placeholder="Abschnitt Titel hinzufügen" value="${title}">
             </div>
-            <textarea class="modal-textarea large-textarea" placeholder="Abschnitt hinzufügen"></textarea>
+            <textarea class="modal-textarea large-textarea" placeholder="Abschnitt hinzufügen">${content}</textarea>
         `;
         section.querySelector('.add-section-btn')?.addEventListener('click', addSection);
         sectionsContainer.appendChild(section);
     }
 
-    function addTag() {
+    function addTag(tag = '') {
         const tagItem = document.createElement('div');
         tagItem.classList.add('tag-item');
         tagItem.innerHTML = `
             <button class="add-tag-btn">+</button>
-            <input type="text" class="tag-input" placeholder="Tag hinzufügen">
+            <input type="text" class="tag-input" placeholder="Tag hinzufügen" value="${tag}">
         `;
         tagItem.querySelector('.add-tag-btn')?.addEventListener('click', addTag);
         tagContainer.appendChild(tagItem);
@@ -363,6 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 placeholderImg.src = uploadedImageUrl;
             };
             reader.readAsDataURL(file);
+        } else {
+            resetImagePlaceholder();
         }
     }
 });

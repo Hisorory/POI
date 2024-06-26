@@ -74,19 +74,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         var statusValue = statusInput.value || 'Entwurf';
         var typeValue = typeInput.value || 'Bachelor';
+        var sections = Array.from(sectionsContainer.querySelectorAll('.section')).map(function (section) {
+            var title = section.querySelector('.modal-input').value.trim();
+            var content = section.querySelector('.modal-textarea').value.trim();
+            return { title: title, content: content };
+        }).filter(function (section) { return section.title || section.content; });
+        var tags = Array.from(tagContainer.querySelectorAll('.tag-item')).map(function (tagItem) {
+            var tag = tagItem.querySelector('.tag-input').value.trim();
+            return tag;
+        }).filter(function (tag) { return tag; });
         if (isValid) {
             var title = titleInput.value.trim();
             var author = authorInput.value.trim();
+            var imageUrl = uploadedImageUrl || '../Bilder/placeholder.png'; // Use placeholder image if no image uploaded
+            var topic = { id: '', title: title, status: statusValue, type: typeValue, author: author, imageUrl: imageUrl, sections: sections, tags: tags };
             if (editingRow) {
                 // Update existing topic
-                updateTopicInTable(editingRow, title, statusValue, typeValue, author, uploadedImageUrl);
-                updateTopicInLocalStorage(editingRow.dataset.id, { title: title, status: statusValue, type: typeValue, author: author, imageUrl: uploadedImageUrl });
+                topic.id = editingRow.dataset.id;
+                updateTopicInTable(editingRow, topic);
+                updateTopicInLocalStorage(topic.id, topic);
             }
             else {
                 // Add new topic
-                var id = new Date().getTime().toString();
-                addTopicToTable(id, title, statusValue, typeValue, author, uploadedImageUrl);
-                saveToLocalStorage({ id: id, title: title, status: statusValue, type: typeValue, author: author, imageUrl: uploadedImageUrl });
+                topic.id = new Date().getTime().toString();
+                addTopicToTable(topic);
+                saveToLocalStorage(topic);
             }
             modal.style.display = 'none';
             resetForm();
@@ -100,13 +112,9 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.style.display = 'none';
     });
     // Add event listener for the add-section button
-    (_b = document.querySelector('.add-section-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
-        addSection();
-    });
+    (_b = document.querySelector('.add-section-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', addSection);
     // Add event listener for the add-tag button
-    (_c = document.querySelector('.add-tag-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
-        addTag();
-    });
+    (_c = document.querySelector('.add-tag-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', addTag);
     // Event listener for the image upload
     placeholderImg.addEventListener('click', function () {
         fileInput.click();
@@ -159,17 +167,24 @@ document.addEventListener('DOMContentLoaded', function () {
             var status_1 = (_a = row.querySelector('.status')) === null || _a === void 0 ? void 0 : _a.textContent;
             var type = row.cells[3].textContent;
             var author = row.dataset.author;
-            var imageUrl = row.dataset.imageUrl;
+            var imageUrl = row.dataset.imageUrl || '../Bilder/placeholder.png'; // Use placeholder if no imageUrl
+            var sections = JSON.parse(row.dataset.sections || '[]');
+            var tags_1 = JSON.parse(row.dataset.tags || '[]');
             titleInput.value = title;
             authorInput.value = author;
             statusInput.value = status_1;
             typeInput.value = type;
-            if (imageUrl) {
-                placeholderImg.src = imageUrl;
-                uploadedImageUrl = imageUrl;
+            placeholderImg.src = imageUrl;
+            uploadedImageUrl = imageUrl;
+            sectionsContainer.innerHTML = '';
+            sections.forEach(function (section) { return addSection(section.title, section.content); });
+            if (sections.length === 0) {
+                addSection();
             }
-            else {
-                resetImagePlaceholder();
+            tagContainer.innerHTML = '';
+            tags_1.forEach(function (tag) { return addTag(tag); });
+            if (tags_1.length === 0) {
+                addTag();
             }
             modal.style.display = 'block';
             editingRow = row;
@@ -215,29 +230,31 @@ document.addEventListener('DOMContentLoaded', function () {
         doc.text("Beschreibung: ".concat(description), 10, 50);
         doc.save("".concat(title, ".pdf"));
     }
-    function addTopicToTable(id, title, status, type, author, imageUrl) {
+    function addTopicToTable(topic) {
         var _a, _b, _c;
-        var statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
-        var displayStatus = status || '';
-        var displayType = type || '';
+        var statusClass = topic.status.toLowerCase() === 'vollständig' ? 'complete' : topic.status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
         var newRow = document.createElement('tr');
-        newRow.dataset.id = id;
-        newRow.dataset.author = author;
-        newRow.dataset.imageUrl = imageUrl;
-        newRow.innerHTML = "\n            <td><input type=\"checkbox\"></td>\n            <td>".concat(title, "</td>\n            <td><span class=\"status ").concat(statusClass, "\">").concat(displayStatus, "</span></td>\n            <td>").concat(displayType, "</td>\n            <td>\n                <button class=\"edit-btn\"><img src=\"../Bilder/edit-icon.png\" alt=\"Edit\"></button>\n                <button class=\"delete-btn\"><img src=\"../Bilder/delete-icon.png\" alt=\"Delete\"></button>\n            </td>\n        ");
+        newRow.dataset.id = topic.id;
+        newRow.dataset.author = topic.author;
+        newRow.dataset.imageUrl = topic.imageUrl;
+        newRow.dataset.sections = JSON.stringify(topic.sections);
+        newRow.dataset.tags = JSON.stringify(topic.tags);
+        newRow.innerHTML = "\n            <td><input type=\"checkbox\"></td>\n            <td>".concat(topic.title, "</td>\n            <td><span class=\"status ").concat(statusClass, "\">").concat(topic.status, "</span></td>\n            <td>").concat(topic.type, "</td>\n            <td>\n                <button class=\"edit-btn\"><img src=\"../Bilder/edit-icon.png\" alt=\"Edit\"></button>\n                <button class=\"delete-btn\"><img src=\"../Bilder/delete-icon.png\" alt=\"Delete\"></button>\n            </td>\n        ");
         (_a = topicsTable.querySelector('tbody')) === null || _a === void 0 ? void 0 : _a.appendChild(newRow);
         (_b = newRow.querySelector('.delete-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', deleteRow);
         (_c = newRow.querySelector('.edit-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', editRow);
         newRow.addEventListener('click', function () { return showDetailModal(newRow); });
     }
-    function updateTopicInTable(row, title, status, type, author, imageUrl) {
-        row.cells[1].textContent = title;
+    function updateTopicInTable(row, topic) {
+        row.cells[1].textContent = topic.title;
         var statusElement = row.querySelector('.status');
-        statusElement.textContent = status;
-        statusElement.className = "status ".concat(getStatusClass(status));
-        row.cells[3].textContent = type;
-        row.dataset.author = author;
-        row.dataset.imageUrl = imageUrl;
+        statusElement.textContent = topic.status;
+        statusElement.className = "status ".concat(getStatusClass(topic.status));
+        row.cells[3].textContent = topic.type;
+        row.dataset.author = topic.author;
+        row.dataset.imageUrl = topic.imageUrl;
+        row.dataset.sections = JSON.stringify(topic.sections);
+        row.dataset.tags = JSON.stringify(topic.tags);
     }
     function saveToLocalStorage(topic) {
         var topics = JSON.parse(localStorage.getItem('topics') || '[]');
@@ -260,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadTopicsFromLocalStorage() {
         var topics = JSON.parse(localStorage.getItem('topics') || '[]');
         topics.forEach(function (topic) {
-            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author, topic.imageUrl);
+            addTopicToTable(topic);
         });
     }
     function resetForm() {
@@ -280,19 +297,22 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
         fileInput.value = ''; // Clear the file input
     }
-    function addSection() {
+    function addSection(title, content) {
         var _a;
+        if (title === void 0) { title = ''; }
+        if (content === void 0) { content = ''; }
         var section = document.createElement('div');
         section.classList.add('section');
-        section.innerHTML = "\n            <div class=\"section-header\">\n                <button class=\"add-section-btn\">+</button>\n                <input type=\"text\" class=\"modal-input\" placeholder=\"Abschnitt Titel hinzuf\u00FCgen\">\n            </div>\n            <textarea class=\"modal-textarea large-textarea\" placeholder=\"Abschnitt hinzuf\u00FCgen\"></textarea>\n        ";
+        section.innerHTML = "\n            <div class=\"section-header\">\n                <button class=\"add-section-btn\">+</button>\n                <input type=\"text\" class=\"modal-input\" placeholder=\"Abschnitt Titel hinzuf\u00FCgen\" value=\"".concat(title, "\">\n            </div>\n            <textarea class=\"modal-textarea large-textarea\" placeholder=\"Abschnitt hinzuf\u00FCgen\">").concat(content, "</textarea>\n        ");
         (_a = section.querySelector('.add-section-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', addSection);
         sectionsContainer.appendChild(section);
     }
-    function addTag() {
+    function addTag(tag) {
         var _a;
+        if (tag === void 0) { tag = ''; }
         var tagItem = document.createElement('div');
         tagItem.classList.add('tag-item');
-        tagItem.innerHTML = "\n            <button class=\"add-tag-btn\">+</button>\n            <input type=\"text\" class=\"tag-input\" placeholder=\"Tag hinzuf\u00FCgen\">\n        ";
+        tagItem.innerHTML = "\n            <button class=\"add-tag-btn\">+</button>\n            <input type=\"text\" class=\"tag-input\" placeholder=\"Tag hinzuf\u00FCgen\" value=\"".concat(tag, "\">\n        ");
         (_a = tagItem.querySelector('.add-tag-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', addTag);
         tagContainer.appendChild(tagItem);
     }
@@ -317,6 +337,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 placeholderImg.src = uploadedImageUrl;
             };
             reader.readAsDataURL(file);
+        }
+        else {
+            resetImagePlaceholder();
         }
     }
 });
