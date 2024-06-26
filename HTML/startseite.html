@@ -6,7 +6,6 @@
     <title>Porsche Informatik Themen</title>
     <link rel="stylesheet" href="../CSS/startseite.css">
     <script defer src="../.idea/Typescript/startseite.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -57,46 +56,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td><input type="checkbox"></td>
-                <td>Effiziente Algorithmen zur automatischen Erkennung von Anomalien in großen Datensätzen</td>
-                <td><span class="status draft">Entwurf</span></td>
-                <td>Bachelor</td>
-                <td>
-                    <button class="edit-btn"><img src="../Bilder/edit-icon.png" alt="Edit"></button>
-                    <button class="delete-btn"><img src="../Bilder/delete-icon.png" alt="Delete"></button>
-                </td>
-            </tr>
-            <tr>
-                <td><input type="checkbox"></td>
-                <td>Optimierung von Deep Learning-Techniken zur Bilderkennung und -klassifizierung</td>
-                <td><span class="status complete">Vollständig</span></td>
-                <td>Master</td>
-                <td>
-                    <button class="edit-btn"><img src="../Bilder/edit-icon.png" alt="Edit"></button>
-                    <button class="delete-btn"><img src="../Bilder/delete-icon.png" alt="Delete"></button>
-                </td>
-            </tr>
-            <tr>
-                <td><input type="checkbox"></td>
-                <td>Analyse und Optimierung von maschinellen Lernalgorithmen zur Vorhersage von...</td>
-                <td><span class="status draft">Entwurf</span></td>
-                <td>Master</td>
-                <td>
-                    <button class="edit-btn"><img src="../Bilder/edit-icon.png" alt="Edit"></button>
-                    <button class="delete-btn"><img src="../Bilder/delete-icon.png" alt="Delete"></button>
-                </td>
-            </tr>
-            <tr>
-                <td><input type="checkbox"></td>
-                <td>Analyse und Verbesserung der Benutzererfahrung in mobilen Anwendungen</td>
-                <td><span class="status assigned">Vergeben</span></td>
-                <td>Bachelor</td>
-                <td>
-                    <button class="edit-btn"><img src="../Bilder/edit-icon.png" alt="Edit"></button>
-                    <button class="delete-btn"><img src="../Bilder/delete-icon.png" alt="Delete"></button>
-                </td>
-            </tr>
+
             </tbody>
         </table>
     </div>
@@ -111,7 +71,6 @@
                     <img id="placeholder-img" src="../Bilder/placeholder.png" alt="Bild hinzufügen">
                     <input type="file" id="file-input" style="display: none;" accept="image/*">
                     <div class="tag-container">
-                        <!-- Dynamically added tag items will go here -->
                         <div class="tag-item">
                             <button class="add-tag-btn">+</button>
                             <input type="text" class="tag-input" placeholder="Tag hinzufügen">
@@ -125,22 +84,34 @@
                     <textarea id="title" class="modal-textarea" placeholder="Titel hinzufügen*"></textarea>
                     <label for="author" class="modal-label">Autor*in hinzufügen*</label>
                     <input type="text" id="author" class="modal-input" placeholder="Autor*in hinzufügen*">
-                    <label for="status-filter-modal" class="modal-label">Status</label>
+                    <label for="status-filter-modal" class="modal-label">Status*</label>
                     <select id="status-filter-modal" class="modal-input">
                         <option value="Entwurf">Entwurf</option>
                         <option value="Vollständig">Vollständig</option>
                         <option value="Vergeben">Vergeben</option>
                     </select>
-                    <label for="art-filter-modal" class="modal-label">Art</label>
+                    <label for="art-filter-modal" class="modal-label">Art*</label>
                     <select id="art-filter-modal" class="modal-input">
                         <option value="Bachelor">Bachelor</option>
                         <option value="Master">Master</option>
                     </select>
+                    <label for="location-filter-modal" class="modal-label">Standort</label>
+                    <select id="location-filter-modal" class="modal-input">
+                        <option value="Salzburg">Salzburg</option>
+                        <option value="Hagenberg">Hagenberg</option>
+                    </select>
+                    <label for="person-filter-modal" class="modal-label">Personen</label>
+                    <select id="person-filter-modal" class="modal-input">
+                        <option value="Einzelarbeit">Einzelarbeit</option>
+                        <option value="2-3 Personen">2-3 Personen</option>
+                        <option value="4-5 Personen">4-5 Personen</option>
+                    </select>
+                    <label for="start-date-filter-modal" class="modal-label">Startdatum</label>
+                    <input type="date" id="start-date-filter-modal" class="modal-input">
                 </div>
             </div>
         </div>
         <div class="sections-container">
-            <!-- Dynamically added sections will go here -->
             <div class="section">
                 <div class="section-header">
                     <button class="add-section-btn">+</button>
@@ -167,48 +138,9 @@
         </div>
     </div>
 </div>
-<div id="filter-modal" class="modal">
-    <div class="modal-content">
-        <span id="filter-close-btn" class="close-btn">&times;</span>
-        <div class="modal-body">
-            <h2>Filter anwenden</h2>
-            <label for="status-filter-modal">Status:</label>
-            <select id="status-filter-modal">
-                <option value="">Alle</option>
-                <option value="Entwurf">Entwurf</option>
-                <option value="Vollständig">Vollständig</option>
-                <option value="Vergeben">Vergeben</option>
-                <option value="Abgeschlossen">Abgeschlossen</option>
-            </select>
-            <label for="art-filter-modal">Art:</label>
-            <select id="art-filter-modal">
-                <option value="">Alle</option>
-                <option value="Bachelor">Bachelor</option>
-                <option value="Master">Master</option>
-            </select>
-            <label for="start-date-filter-modal">Startdatum:</label>
-            <input type="date" id="start-date-filter-modal">
-            <label for="location-filter-modal">Standort:</label>
-            <select id="location-filter-modal">
-                <option value="">Alle</option>
-                <option value="Hagenberg">Hagenberg</option>
-                <option value="Salzburg">Salzburg</option>
-            </select>
-            <label for="person-filter-modal">Personen:</label>
-            <select id="person-filter-modal">
-                <option value="">Alle</option>
-                <option value="Einzelarbeit">Einzelarbeit</option>
-                <option value="2-3 Personen">2-3 Personen</option>
-                <option value="4-5 Personen">4-5 Personen</option>
-            </select>
-            <button id="apply-filters-btn">Filter anwenden</button>
-        </div>
-    </div>
-</div>
 <p id="no-results-message" style="display:none;">Keine Treffer gefunden</p>
 </body>
 </html>
-
 
 
 

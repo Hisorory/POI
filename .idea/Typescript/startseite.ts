@@ -16,8 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const sectionsContainer = document.querySelector('.sections-container') as HTMLDivElement;
     const tagContainer = document.querySelector('.tag-container') as HTMLDivElement;
     const closeButton = document.querySelector('.close-btn') as HTMLSpanElement;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const placeholderImg = document.getElementById('placeholder-img') as HTMLImageElement;
 
     let editingRow: HTMLTableRowElement | null = null;
+    let uploadedImageUrl = '';
 
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
@@ -57,6 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage += 'Bitte füllen Sie den Autor aus.\n';
         }
 
+        if (!statusInput.value.trim()) {
+            isValid = false;
+            errorMessage += 'Bitte wählen Sie einen Status aus.\n';
+        }
+
+        if (!typeInput.value.trim()) {
+            isValid = false;
+            errorMessage += 'Bitte wählen Sie eine Art aus.\n';
+        }
+
         const statusValue = statusInput.value || 'Entwurf';
         const typeValue = typeInput.value || 'Bachelor';
 
@@ -66,13 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (editingRow) {
                 // Update existing topic
-                updateTopicInTable(editingRow, title, statusValue, typeValue, author);
-                updateTopicInLocalStorage(editingRow.dataset.id, { title, status: statusValue, type: typeValue, author });
+                updateTopicInTable(editingRow, title, statusValue, typeValue, author, uploadedImageUrl);
+                updateTopicInLocalStorage(editingRow.dataset.id, { title, status: statusValue, type: typeValue, author, imageUrl: uploadedImageUrl });
             } else {
                 // Add new topic
                 const id = new Date().getTime().toString();
-                addTopicToTable(id, title, statusValue, typeValue, author);
-                saveToLocalStorage({ id, title, status: statusValue, type: typeValue, author });
+                addTopicToTable(id, title, statusValue, typeValue, author, uploadedImageUrl);
+                saveToLocalStorage({ id, title, status: statusValue, type: typeValue, author, imageUrl: uploadedImageUrl });
             }
 
             modal.style.display = 'none';
@@ -96,6 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.add-tag-btn')?.addEventListener('click', () => {
         addTag();
     });
+
+    // Event listener for the image upload
+    placeholderImg.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', handleFileUpload);
 
     loadTopicsFromLocalStorage();
 
@@ -147,11 +167,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = row.querySelector('.status')?.textContent;
             const type = row.cells[3].textContent;
             const author = row.dataset.author;
+            const imageUrl = row.dataset.imageUrl;
 
             titleInput.value = title;
             authorInput.value = author;
             statusInput.value = status;
             typeInput.value = type;
+
+            if (imageUrl) {
+                placeholderImg.src = imageUrl;
+                uploadedImageUrl = imageUrl;
+            } else {
+                resetImagePlaceholder();
+            }
 
             modal.style.display = 'block';
             editingRow = row;
@@ -204,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.save(`${title}.pdf`);
     }
 
-    function addTopicToTable(id: string, title: string, status: string, type: string, author: string) {
+    function addTopicToTable(id: string, title: string, status: string, type: string, author: string, imageUrl: string) {
         const statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
 
         const displayStatus = status || '';
@@ -213,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRow = document.createElement('tr');
         newRow.dataset.id = id;
         newRow.dataset.author = author;
+        newRow.dataset.imageUrl = imageUrl;
 
         newRow.innerHTML = `
             <td><input type="checkbox"></td>
@@ -232,20 +261,23 @@ document.addEventListener('DOMContentLoaded', () => {
         newRow.addEventListener('click', () => showDetailModal(newRow as HTMLTableRowElement));
     }
 
-    function updateTopicInTable(row: HTMLTableRowElement, title: string, status: string, type: string, author: string) {
+    function updateTopicInTable(row: HTMLTableRowElement, title: string, status: string, type: string, author: string, imageUrl: string) {
         row.cells[1].textContent = title;
-        row.querySelector('.status')!.textContent = status;
+        const statusElement = row.querySelector('.status')!;
+        statusElement.textContent = status;
+        statusElement.className = `status ${getStatusClass(status)}`;
         row.cells[3].textContent = type;
         row.dataset.author = author;
+        row.dataset.imageUrl = imageUrl;
     }
 
-    function saveToLocalStorage(topic: { id: string, title: string, status: string, type: string, author: string }) {
+    function saveToLocalStorage(topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string }) {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
         topics.push(topic);
         localStorage.setItem('topics', JSON.stringify(topics));
     }
 
-    function updateTopicInLocalStorage(id: string, updatedTopic: { title: string, status: string, type: string, author: string }) {
+    function updateTopicInLocalStorage(id: string, updatedTopic: { title: string, status: string, type: string, author: string, imageUrl: string }) {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
         const index = topics.findIndex((topic: { id: string }) => topic.id === id);
         if (index !== -1) {
@@ -262,18 +294,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadTopicsFromLocalStorage() {
         const topics = JSON.parse(localStorage.getItem('topics') || '[]');
-        topics.forEach((topic: { id: string, title: string, status: string, type: string, author: string }) => {
-            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author);
+        topics.forEach((topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string }) => {
+            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author, topic.imageUrl);
         });
     }
 
     function resetForm() {
-        const placeholderImg = document.getElementById('placeholder-img') as HTMLImageElement;
-        const fileInput = document.getElementById('file-input') as HTMLInputElement;
-        const placeholderSrc = placeholderImg.src; // Store the original placeholder image source
-
-        placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
-        fileInput.value = ''; // Clear the file input
+        resetImagePlaceholder();
         titleInput.value = ''; // Clear the title input
         authorInput.value = ''; // Clear the author input
         statusInput.value = ''; // Clear the status input
@@ -282,6 +309,13 @@ document.addEventListener('DOMContentLoaded', () => {
         addSection(); // Add initial section
         tagContainer.innerHTML = ''; // Clear all tags
         addTag(); // Add initial tag
+        uploadedImageUrl = ''; // Reset uploaded image URL
+    }
+
+    function resetImagePlaceholder() {
+        const placeholderSrc = '../Bilder/placeholder.png'; // Original placeholder image source
+        placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
+        fileInput.value = ''; // Clear the file input
     }
 
     function addSection() {
@@ -308,6 +342,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tagItem.querySelector('.add-tag-btn')?.addEventListener('click', addTag);
         tagContainer.appendChild(tagItem);
     }
+
+    function getStatusClass(status: string): string {
+        switch (status.toLowerCase()) {
+            case 'vollständig':
+                return 'complete';
+            case 'vergeben':
+                return 'assigned';
+            default:
+                return 'draft';
+        }
+    }
+
+    function handleFileUpload() {
+        const file = fileInput.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImageUrl = e.target?.result as string;
+                placeholderImg.src = uploadedImageUrl;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 });
+
+
 
 

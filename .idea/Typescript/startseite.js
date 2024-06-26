@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var sectionsContainer = document.querySelector('.sections-container');
     var tagContainer = document.querySelector('.tag-container');
     var closeButton = document.querySelector('.close-btn');
+    var fileInput = document.getElementById('file-input');
+    var placeholderImg = document.getElementById('placeholder-img');
     var editingRow = null;
+    var uploadedImageUrl = '';
     statusFilter.addEventListener('change', filterTopics);
     artFilter.addEventListener('change', filterTopics);
     searchInput.addEventListener('input', filterTopics);
@@ -61,6 +64,14 @@ document.addEventListener('DOMContentLoaded', function () {
             isValid = false;
             errorMessage += 'Bitte füllen Sie den Autor aus.\n';
         }
+        if (!statusInput.value.trim()) {
+            isValid = false;
+            errorMessage += 'Bitte wählen Sie einen Status aus.\n';
+        }
+        if (!typeInput.value.trim()) {
+            isValid = false;
+            errorMessage += 'Bitte wählen Sie eine Art aus.\n';
+        }
         var statusValue = statusInput.value || 'Entwurf';
         var typeValue = typeInput.value || 'Bachelor';
         if (isValid) {
@@ -68,14 +79,14 @@ document.addEventListener('DOMContentLoaded', function () {
             var author = authorInput.value.trim();
             if (editingRow) {
                 // Update existing topic
-                updateTopicInTable(editingRow, title, statusValue, typeValue, author);
-                updateTopicInLocalStorage(editingRow.dataset.id, { title: title, status: statusValue, type: typeValue, author: author });
+                updateTopicInTable(editingRow, title, statusValue, typeValue, author, uploadedImageUrl);
+                updateTopicInLocalStorage(editingRow.dataset.id, { title: title, status: statusValue, type: typeValue, author: author, imageUrl: uploadedImageUrl });
             }
             else {
                 // Add new topic
                 var id = new Date().getTime().toString();
-                addTopicToTable(id, title, statusValue, typeValue, author);
-                saveToLocalStorage({ id: id, title: title, status: statusValue, type: typeValue, author: author });
+                addTopicToTable(id, title, statusValue, typeValue, author, uploadedImageUrl);
+                saveToLocalStorage({ id: id, title: title, status: statusValue, type: typeValue, author: author, imageUrl: uploadedImageUrl });
             }
             modal.style.display = 'none';
             resetForm();
@@ -96,6 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
     (_c = document.querySelector('.add-tag-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
         addTag();
     });
+    // Event listener for the image upload
+    placeholderImg.addEventListener('click', function () {
+        fileInput.click();
+    });
+    fileInput.addEventListener('change', handleFileUpload);
     loadTopicsFromLocalStorage();
     function filterTopics() {
         var statusValue = statusFilter.value.toLowerCase();
@@ -143,10 +159,18 @@ document.addEventListener('DOMContentLoaded', function () {
             var status_1 = (_a = row.querySelector('.status')) === null || _a === void 0 ? void 0 : _a.textContent;
             var type = row.cells[3].textContent;
             var author = row.dataset.author;
+            var imageUrl = row.dataset.imageUrl;
             titleInput.value = title;
             authorInput.value = author;
             statusInput.value = status_1;
             typeInput.value = type;
+            if (imageUrl) {
+                placeholderImg.src = imageUrl;
+                uploadedImageUrl = imageUrl;
+            }
+            else {
+                resetImagePlaceholder();
+            }
             modal.style.display = 'block';
             editingRow = row;
         }
@@ -191,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
         doc.text("Beschreibung: ".concat(description), 10, 50);
         doc.save("".concat(title, ".pdf"));
     }
-    function addTopicToTable(id, title, status, type, author) {
+    function addTopicToTable(id, title, status, type, author, imageUrl) {
         var _a, _b, _c;
         var statusClass = status.toLowerCase() === 'vollständig' ? 'complete' : status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
         var displayStatus = status || '';
@@ -199,17 +223,21 @@ document.addEventListener('DOMContentLoaded', function () {
         var newRow = document.createElement('tr');
         newRow.dataset.id = id;
         newRow.dataset.author = author;
+        newRow.dataset.imageUrl = imageUrl;
         newRow.innerHTML = "\n            <td><input type=\"checkbox\"></td>\n            <td>".concat(title, "</td>\n            <td><span class=\"status ").concat(statusClass, "\">").concat(displayStatus, "</span></td>\n            <td>").concat(displayType, "</td>\n            <td>\n                <button class=\"edit-btn\"><img src=\"../Bilder/edit-icon.png\" alt=\"Edit\"></button>\n                <button class=\"delete-btn\"><img src=\"../Bilder/delete-icon.png\" alt=\"Delete\"></button>\n            </td>\n        ");
         (_a = topicsTable.querySelector('tbody')) === null || _a === void 0 ? void 0 : _a.appendChild(newRow);
         (_b = newRow.querySelector('.delete-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', deleteRow);
         (_c = newRow.querySelector('.edit-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', editRow);
         newRow.addEventListener('click', function () { return showDetailModal(newRow); });
     }
-    function updateTopicInTable(row, title, status, type, author) {
+    function updateTopicInTable(row, title, status, type, author, imageUrl) {
         row.cells[1].textContent = title;
-        row.querySelector('.status').textContent = status;
+        var statusElement = row.querySelector('.status');
+        statusElement.textContent = status;
+        statusElement.className = "status ".concat(getStatusClass(status));
         row.cells[3].textContent = type;
         row.dataset.author = author;
+        row.dataset.imageUrl = imageUrl;
     }
     function saveToLocalStorage(topic) {
         var topics = JSON.parse(localStorage.getItem('topics') || '[]');
@@ -232,15 +260,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function loadTopicsFromLocalStorage() {
         var topics = JSON.parse(localStorage.getItem('topics') || '[]');
         topics.forEach(function (topic) {
-            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author);
+            addTopicToTable(topic.id, topic.title, topic.status, topic.type, topic.author, topic.imageUrl);
         });
     }
     function resetForm() {
-        var placeholderImg = document.getElementById('placeholder-img');
-        var fileInput = document.getElementById('file-input');
-        var placeholderSrc = placeholderImg.src; // Store the original placeholder image source
-        placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
-        fileInput.value = ''; // Clear the file input
+        resetImagePlaceholder();
         titleInput.value = ''; // Clear the title input
         authorInput.value = ''; // Clear the author input
         statusInput.value = ''; // Clear the status input
@@ -249,6 +273,12 @@ document.addEventListener('DOMContentLoaded', function () {
         addSection(); // Add initial section
         tagContainer.innerHTML = ''; // Clear all tags
         addTag(); // Add initial tag
+        uploadedImageUrl = ''; // Reset uploaded image URL
+    }
+    function resetImagePlaceholder() {
+        var placeholderSrc = '../Bilder/placeholder.png'; // Original placeholder image source
+        placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
+        fileInput.value = ''; // Clear the file input
     }
     function addSection() {
         var _a;
@@ -265,5 +295,28 @@ document.addEventListener('DOMContentLoaded', function () {
         tagItem.innerHTML = "\n            <button class=\"add-tag-btn\">+</button>\n            <input type=\"text\" class=\"tag-input\" placeholder=\"Tag hinzuf\u00FCgen\">\n        ";
         (_a = tagItem.querySelector('.add-tag-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', addTag);
         tagContainer.appendChild(tagItem);
+    }
+    function getStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'vollständig':
+                return 'complete';
+            case 'vergeben':
+                return 'assigned';
+            default:
+                return 'draft';
+        }
+    }
+    function handleFileUpload() {
+        var _a;
+        var file = (_a = fileInput.files) === null || _a === void 0 ? void 0 : _a[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var _a;
+                uploadedImageUrl = (_a = e.target) === null || _a === void 0 ? void 0 : _a.result;
+                placeholderImg.src = uploadedImageUrl;
+            };
+            reader.readAsDataURL(file);
+        }
     }
 });
