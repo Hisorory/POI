@@ -1,3 +1,5 @@
+import { jsPDF } from 'jspdf';
+
 document.addEventListener('DOMContentLoaded', () => {
     const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
     const artFilter = document.getElementById('art-filter') as HTMLSelectElement;
@@ -9,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.querySelector('.save-btn') as HTMLButtonElement;
     const addButton = document.querySelector('.add-btn') as HTMLButtonElement;
     const modal = document.querySelector('.modal') as HTMLDivElement;
-    const titleInput = document.getElementById('title') as HTMLTextAreaElement;
+    const titleInput = document.getElementById('title') as HTMLInputElement;
     const authorInput = document.getElementById('author') as HTMLInputElement;
     const statusInput = document.getElementById('status-filter-modal') as HTMLSelectElement;
     const typeInput = document.getElementById('art-filter-modal') as HTMLSelectElement;
@@ -73,13 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusValue = statusInput.value || 'Entwurf';
         const typeValue = typeInput.value || 'Bachelor';
 
-        const sections = Array.from(sectionsContainer.querySelectorAll('.section')).map(section => {
+        const sections = toArray(sectionsContainer.querySelectorAll('.section')).map(section => {
             const title = (section.querySelector('.modal-input') as HTMLInputElement).value.trim();
             const content = (section.querySelector('.modal-textarea') as HTMLTextAreaElement).value.trim();
             return { title, content };
         }).filter(section => section.title || section.content);
 
-        const tags = Array.from(tagContainer.querySelectorAll('.tag-item')).map(tagItem => {
+        const tags = toArray(tagContainer.querySelectorAll('.tag-item')).map(tagItem => {
             const tag = (tagItem.querySelector('.tag-input') as HTMLInputElement).value.trim();
             return tag;
         }).filter(tag => tag);
@@ -87,17 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isValid) {
             const title = titleInput.value.trim();
             const author = authorInput.value.trim();
-            const imageUrl = uploadedImageUrl || '../Bilder/placeholder.png'; // Use placeholder image if no image uploaded
+            const imageUrl = uploadedImageUrl || '../Bilder/placeholder.png';
 
             const topic = { id: '', title, status: statusValue, type: typeValue, author, imageUrl, sections, tags };
 
             if (editingRow) {
-                // Update existing topic
-                topic.id = editingRow.dataset.id;
+                topic.id = editingRow.dataset.id!;
                 updateTopicInTable(editingRow, topic);
                 updateTopicInLocalStorage(topic.id, topic);
             } else {
-                // Add new topic
                 topic.id = new Date().getTime().toString();
                 addTopicToTable(topic);
                 saveToLocalStorage(topic);
@@ -110,18 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Close button event listener for the modal
     closeButton.addEventListener('click', () => {
         modal.style.display = 'none';
     });
 
-    // Add event listener for the add-section button
-    document.querySelector('.add-section-btn')?.addEventListener('click', addSection);
+    document.querySelector('.add-section-btn')?.addEventListener('click', () => addSection());
+    document.querySelector('.add-tag-btn')?.addEventListener('click', () => addTag());
 
-    // Add event listener for the add-tag button
-    document.querySelector('.add-tag-btn')?.addEventListener('click', addTag);
-
-    // Event listener for the image upload
     placeholderImg.addEventListener('click', () => {
         fileInput.click();
     });
@@ -137,18 +132,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const rows = topicsTable.querySelectorAll('tbody tr');
         rows.forEach(row => {
-            const status = row.querySelector('.status')?.textContent?.toLowerCase() || '';
-            const art = row.cells[3]?.textContent?.toLowerCase() || '';
-            const title = row.cells[1]?.textContent?.toLowerCase() || '';
+            const status = (row.querySelector('.status') as HTMLElement)?.textContent?.toLowerCase() || '';
+            const art = (row as HTMLTableRowElement).cells[3]?.textContent?.toLowerCase() || '';
+            const title = (row as HTMLTableRowElement).cells[1]?.textContent?.toLowerCase() || '';
 
-            const matchesStatus = !statusValue || status.includes(statusValue);
-            const matchesArt = !artValue || art.includes(artValue);
-            const matchesSearch = !searchValue || title.includes(searchValue);
+            const matchesStatus = !statusValue || status.indexOf(statusValue);
+            const matchesArt = !artValue || art.indexOf(artValue);
+            const matchesSearch = !searchValue || title.indexOf(searchValue);
 
             if (matchesStatus && matchesArt && matchesSearch) {
-                row.style.display = '';
+                (row as HTMLElement).style.display = '';
             } else {
-                row.style.display = 'none';
+                (row as HTMLElement).style.display = 'none';
             }
         });
     }
@@ -163,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = event.target as HTMLElement;
         const row = button.closest('tr') as HTMLTableRowElement;
         if (row) {
-            const id = row.dataset.id;
+            const id = row.dataset.id!;
             row.remove();
             removeFromLocalStorage(id);
         }
@@ -174,11 +169,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = event.target as HTMLElement;
         const row = button.closest('tr') as HTMLTableRowElement;
         if (row) {
-            const title = row.cells[1].textContent;
-            const status = row.querySelector('.status')?.textContent;
-            const type = row.cells[3].textContent;
-            const author = row.dataset.author;
-            const imageUrl = row.dataset.imageUrl || '../Bilder/placeholder.png'; // Use placeholder if no imageUrl
+            const title = row.cells[1].textContent || '';
+            const status = row.querySelector('.status')?.textContent || '';
+            const type = row.cells[3].textContent || '';
+            const author = row.dataset.author || '';
+            const imageUrl = row.dataset.imageUrl || '../Bilder/placeholder.png';
             const sections = JSON.parse(row.dataset.sections || '[]');
             const tags = JSON.parse(row.dataset.tags || '[]');
 
@@ -191,16 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
             uploadedImageUrl = imageUrl;
 
             sectionsContainer.innerHTML = '';
-            sections.forEach(section => addSection(section.title, section.content));
-            if (sections.length === 0) {
-                addSection();
-            }
+            sections.forEach((section: { title: string, content: string }) => addSection(section.title, section.content));
+            if (sections.length === 0) addSection();
 
             tagContainer.innerHTML = '';
-            tags.forEach(tag => addTag(tag));
-            if (tags.length === 0) {
-                addTag();
-            }
+            tags.forEach((tag: string) => addTag(tag));
+            if (tags.length === 0) addTag();
 
             modal.style.display = 'block';
             editingRow = row;
@@ -209,17 +200,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showDetailModal(row: HTMLTableRowElement) {
-        const title = row.cells[1].textContent;
-        const author = row.dataset.author;
-        const status = row.querySelector('.status')?.textContent;
-        const type = row.cells[3].textContent;
+        const title = row.cells[1].textContent || '';
+        const author = row.dataset.author || '';
+        const status = row.querySelector('.status')?.textContent || '';
+        const type = row.cells[3].textContent || '';
         const description = "Lorem ipsum dolor sit amet...";
 
-        const modalTitle = document.getElementById('modal-title');
-        const modalAuthor = document.getElementById('modal-author');
-        const modalStatus = document.getElementById('modal-status');
-        const modalType = document.getElementById('modal-type');
-        const modalDescription = document.getElementById('modal-description');
+        const modalTitle = document.getElementById('modal-title')!;
+        const modalAuthor = document.getElementById('modal-author')!;
+        const modalStatus = document.getElementById('modal-status')!;
+        const modalType = document.getElementById('modal-type')!;
+        const modalDescription = document.getElementById('modal-description')!;
 
         modalTitle.textContent = title;
         modalAuthor.textContent = `Autor: ${author}`;
@@ -227,21 +218,20 @@ document.addEventListener('DOMContentLoaded', () => {
         modalType.textContent = `Typ: ${type}`;
         modalDescription.textContent = `Beschreibung: ${description}`;
 
-        const modal = document.getElementById('detail-modal') as HTMLDivElement;
-        modal.style.display = 'block';
+        const detailModal = document.getElementById('detail-modal') as HTMLDivElement;
+        detailModal.style.display = 'block';
     }
 
     function downloadPDF(event: Event) {
         const row = (event.target as HTMLElement).closest('tr') as HTMLTableRowElement;
         if (!row) return;
 
-        const title = row.cells[1].textContent;
-        const author = row.dataset.author;
-        const status = row.querySelector('.status')?.textContent;
-        const type = row.cells[3].textContent;
+        const title = row.cells[1].textContent || '';
+        const author = row.dataset.author || '';
+        const status = row.querySelector('.status')?.textContent || '';
+        const type = row.cells[3].textContent || '';
         const description = "Lorem ipsum dolor sit amet...";
 
-        const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
         doc.text(`Titel: ${title}`, 10, 10);
@@ -254,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTopicToTable(topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
-        const statusClass = topic.status.toLowerCase() === 'vollständig' ? 'complete' : topic.status.toLowerCase() === 'vergeben' ? 'assigned' : 'draft';
+        const statusClass = getStatusClass(topic.status);
 
         const newRow = document.createElement('tr');
         newRow.dataset.id = topic.id;
@@ -283,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTopicInTable(row: HTMLTableRowElement, topic: { id: string, title: string, status: string, type: string, author: string, imageUrl: string, sections: any[], tags: string[] }) {
         row.cells[1].textContent = topic.title;
-        const statusElement = row.querySelector('.status')!;
+        const statusElement = row.querySelector('.status') as HTMLElement;
         statusElement.textContent = topic.status;
         statusElement.className = `status ${getStatusClass(topic.status)}`;
         row.cells[3].textContent = topic.type;
@@ -323,21 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetForm() {
         resetImagePlaceholder();
-        titleInput.value = ''; // Clear the title input
-        authorInput.value = ''; // Clear the author input
-        statusInput.value = ''; // Clear the status input
-        typeInput.value = ''; // Clear the type input
-        sectionsContainer.innerHTML = ''; // Clear all sections
-        addSection(); // Add initial section
-        tagContainer.innerHTML = ''; // Clear all tags
-        addTag(); // Add initial tag
-        uploadedImageUrl = ''; // Reset uploaded image URL
+        titleInput.value = '';
+        authorInput.value = '';
+        statusInput.value = '';
+        typeInput.value = '';
+        sectionsContainer.innerHTML = '';
+        addSection();
+        tagContainer.innerHTML = '';
+        addTag();
+        uploadedImageUrl = '';
     }
 
     function resetImagePlaceholder() {
-        const placeholderSrc = '../Bilder/placeholder.png'; // Original placeholder image source
-        placeholderImg.src = placeholderSrc; // Reset the image to the placeholder
-        fileInput.value = ''; // Clear the file input
+        const placeholderSrc = '../Bilder/placeholder.png';
+        placeholderImg.src = placeholderSrc;
+        fileInput.value = '';
     }
 
     function addSection(title = '', content = '') {
@@ -350,7 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <textarea class="modal-textarea large-textarea" placeholder="Abschnitt hinzufügen">${content}</textarea>
         `;
-        section.querySelector('.add-section-btn')?.addEventListener('click', addSection);
+        section.querySelector('.add-section-btn')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            addSection();
+        });
         sectionsContainer.appendChild(section);
     }
 
@@ -361,7 +354,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="add-tag-btn">+</button>
             <input type="text" class="tag-input" placeholder="Tag hinzufügen" value="${tag}">
         `;
-        tagItem.querySelector('.add-tag-btn')?.addEventListener('click', addTag);
+        tagItem.querySelector('.add-tag-btn')?.addEventListener('click', (event) => {
+            event.preventDefault();
+            addTag();
+        });
         tagContainer.appendChild(tagItem);
     }
 
@@ -389,8 +385,12 @@ document.addEventListener('DOMContentLoaded', () => {
             resetImagePlaceholder();
         }
     }
+
+    function toArray(nodeList: NodeList): HTMLElement[] {
+        const array: HTMLElement[] = [];
+        for (let i = 0; i < nodeList.length; i++) {
+            array.push(nodeList[i] as HTMLElement);
+        }
+        return array;
+    }
 });
-
-
-
-

@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@types/jspdf": "^2.0.0",
+    "jspdf": "^2.5.1"
+  }
+}
